@@ -33,6 +33,7 @@ RegionAptTrade2 <- RegionAptTrade %>%
 
 table(is.na(RegionAptTrade2))
 
+#1️⃣ 시장 규모 & 성장성 분석 
 #지역별 아파트 거래량 추이 분석
 head(RegionAptTrade2)
 
@@ -50,4 +51,41 @@ ggplot(region_amount, aes(x=reorder(시도,-아파트_거래량), y=아파트_�
   ) + 
   theme_minimal()
 
+#연도별 거래량 증가 / 감소율
+head(RegionAptTrade2)
+
+library(dplyr)
+
+region_year <- RegionAptTrade2 %>%
+  group_by(시도, 연도) %>%
+  summarise(
+    거래량 = sum(호수, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  arrange(시도, 연도)
+head(region_year)
+
+region_year_growth <- region_year %>%
+  group_by(시도) %>%
+  mutate(
+    거래량_증감률 = (거래량 - lag(거래량)) / lag(거래량) * 100
+  )
+head(region_year_growth)
+
+ggplot(region_year_growth,
+       aes(x = 연도, y = 거래량_증감률)) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray50") +
+  geom_line(color = "steelblue") +
+  geom_point(color = "steelblue") +
+  facet_wrap(~ 시도) +
+  labs(
+    title = "시도별 아파트 거래량 증감률",
+    y = "증감률(%)"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.title.x = element_blank(),  # x축 제목 제거
+    axis.text.x  = element_blank(),  # x축 숫자 제거
+    axis.ticks.x = element_blank()   # x축 눈금 제거
+  )
 
